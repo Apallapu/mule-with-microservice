@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="9000" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Request_Configuration" host="localhost" port="9191" doc:name="HTTP Request Configuration"/>
+    <flow name="getAllTickets">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/getTickets" allowedMethods="GET" doc:name="HTTP"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="/get-All-tickets" method="GET" doc:name="HTTP"/>
+        <logger message="#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="getAllTicketsById">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/get-bus-ticket/{id}" allowedMethods="GET" doc:name="HTTP"/>
+        <set-variable variableName="id" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
+        <http:request config-ref="HTTP_Request_Configuration" path=" /get-bus-ticket/{id}" method="GET" doc:name="HTTP">
+            <http:request-builder>
+                <http:uri-param paramName="id" value="#[flowVars.id]"/>
+            </http:request-builder>
+        </http:request>
+        <logger message="#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="PostTicket">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/createTicket" doc:name="HTTP"/>
+        <set-payload value="#[message.payload]" doc:name="Set Payload"/>
+        <set-property propertyName="content-Type" value="application/json" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="/create-bus-ticket" method="POST" doc:name="HTTP"/>
+        <logger message="#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="putTicket">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/updateTicket/{id}" doc:name="HTTP"/>
+        <set-variable variableName="id" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
+        <set-payload value="#[message.payload]" doc:name="Set Payload"/>
+        <set-property propertyName="content-Type" value="application/json" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="/update-bus-ticket/{id}" method="PUT" doc:name="HTTP">
+            <http:request-builder>
+                <http:uri-param paramName="id" value="#[flowVars.id]"/>
+            </http:request-builder>
+        </http:request>
+        <logger message="#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+    </flow>
+ 
+</mule>
